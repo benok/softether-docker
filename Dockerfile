@@ -57,6 +57,12 @@ RUN groupadd -g ${gid} ${user} \
       groupadd -g $g grp$g && usermod -aG grp$g ${user}; \
     done \
  && mkdir -p /var/log/vpnserver \
+ && for fn in server security packet; do \
+      if [ ! -d "/var/log/vpnserver/${fn}_log" ]; then \
+        mkdir -p /var/log/vpnserver/${fn}_log; \
+      fi \
+    done \
+ && ln -fs /var/log/vpnserver/*_log /usr/vpnserver/ \
  && chmod g+rw -R /run/ /usr/vpn* /var/log/vpnserver \
  && chown :${user} -R /run/ /usr/vpn* /var/log/vpnserver
 
