@@ -8,13 +8,24 @@ get_latest() {
 # get gids of groups
 get_gid() {
   for grp in ${1//,/ }; do
-    echo -n "$(cut -d: -f3 < <(getent group $grp)) "
+    g=$(getent group adm)
+    g=( ${g//:/ } )
+    echo -n "${g[2]} "
   done
 }
 
 get_host_dir_groups() {
   for v in ${1//,/ }; do 
-     stat --printf="%g " "$(cut -d: -f1 < <(echo $v))"
+     vol=( ${v//:/ } )
+     host_dir=${vol[0]}
+     cont_dir=${vol[1]}
+     if [ -e $host_dir ]; then
+       if stat --printf="%g " . >/dev/null 2>&1; then 
+         stat --printf="%g " $host_dir
+       else
+	 stat -f "%g " $host_dir
+       fi
+     fi
   done
 }
 
