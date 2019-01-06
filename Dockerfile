@@ -23,8 +23,7 @@ RUN apk add -U build-base ncurses-dev openssl-dev readline-dev zip \
  && ./configure \
  && make \
  && make install \
- && touch /usr/vpnserver/vpn_server.config \
- && tar cvpf /built.tar.gz /usr/vpn* /usr/bin/vpn*
+ && touch /usr/vpnserver/vpn_server.config
 
 FROM alpine:3.8
 
@@ -40,14 +39,25 @@ RUN apk update \
             openssl readline iptables ncurses ca-certificates \
  && rm -rf /var/cache/apk/*
 
-COPY --from=build /built.tar.gz /
 COPY scripts /opt
+
+WORKDIR /usr
+
+COPY --from=build /usr/vpnserver/ vpnserver/
+COPY --from=build /usr/vpncmd/ vpncmd/
+COPY --from=build /usr/vpnbridge/ vpnbridge/
+COPY --from=build /usr/bin/vpn* bin/
 
 ENV LANG=en_US.UTF-8
 
 RUN chmod +x /opt/*.sh \
- && tar --overwrite -xvpf /built.tar.gz -C / \
- && rm /built.tar.gz
+ && mkdir -p /var/log/vpnserver \
+ && for fn in server security packet; do \
+      if [ ! -d "/var/log/vpnserver/${fn}_log" ]; then \
+        mkdir -p /var/log/vpnserver/${fn}_log; \
+      fi \
+    done \
+ && ln -fs /var/log/vpnserver/*_log /usr/vpnserver/
 
 # add new user and set groups
 RUN groupadd -g ${gid} ${user} \
@@ -56,13 +66,6 @@ RUN groupadd -g ${gid} ${user} \
       echo "New group grp$g"; \
       groupadd -g $g grp$g && usermod -aG grp$g ${user}; \
     done \
- && mkdir -p /var/log/vpnserver \
- && for fn in server security packet; do \
-      if [ ! -d "/var/log/vpnserver/${fn}_log" ]; then \
-        mkdir -p /var/log/vpnserver/${fn}_log; \
-      fi \
-    done \
- && ln -fs /var/log/vpnserver/*_log /usr/vpnserver/ \
  && chmod g+rw -R /run/ /usr/vpn* /var/log/vpnserver \
  && chown :${user} -R /run/ /usr/vpn* /var/log/vpnserver
 
