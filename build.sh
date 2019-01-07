@@ -15,12 +15,12 @@ GIDS="${GIDS// /,}"
 
 echo GIDS: $GIDS
 
-BUILD_ARGS="--build-arg TAG=$TAG \
-            --build-arg GITHUB_REPO=$GITHUB_REPO \
-            --build-arg gids=$GIDS \
-            --build-arg uid=$CONT_UID \
-            --build-arg gid=$CONT_GID \
-            --build-arg user=$CONT_USER"
+BUILD_ARGS="\
+  --build-arg GITHUB_REPO=$GITHUB_REPO \
+  --build-arg gids=$GIDS \
+  --build-arg uid=$CONT_UID \
+  --build-arg gid=$CONT_GID \
+  --build-arg user=$CONT_USER"
 
 echo Invoking:
 echo "docker build . --tag=$TAG_BASE:$TAG_VERSION $BUILD_ARGS"
