@@ -29,12 +29,13 @@ for v in ${VOLUMES//,/ }; do
 done
 
 RUN_ARGS=" \
+  --sysctl net.ipv4.ip_unprivileged_port_start=0 \
   --user $CONT_UID:$CONT_GID \
   $(for g in ${GIDS//,/ }; do echo "--group-add $g "; done) \
   $(for c in ${CAPS//,/ }; do echo "--cap-add $c "; done) \
   $(for v in ${VOLUMES//,/ }; do echo "-v $v "; done) \
   $(for d in ${DEVICES//,/ }; do echo "--device $d "; done) \
-  $(for p in ${PUBLISH_PORTS//,/ }; do echo "-p ${HOST_IP}:$p:$p "; done)"
+  $(for p in ${PUBLISH_PORTS//,/ }; do echo "-p ${HOST_IP}:$p "; done)"
 
 echo "Invoking:"
 echo "docker run --name $CONT_NAME -d --restart unless-stopped $RUN_ARGS $TAG_BASE $@"
