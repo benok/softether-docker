@@ -18,9 +18,18 @@ for v in ${VOLUMES//,/ }; do
   host_dir=${vol[0]}
   cont_dir=${vol[1]}
   #host_dir=$(cut -d: -f1 < <(echo $v))
-  if [ ! -e $host_dir ] && [[ ! "$N" =~ .*[/].* ]]; then
-    docker volume create --name $host_dir
+  if [ ! -e $host_dir ]; then
+    if [[ ! "$host_dir" =~ .*[/].* ]]; then
+      if docker volume ls | grep -q "^[^\s]*\s*softether_log"; then
+        echo Creating volume $host_dir.
+        docker volume create --name $host_dir
+      fi
+    else
+      echo Host directory $host_dir does not exist, touching it instead.
+      touch $host_dir
+    fi  
   else
+    echo Adding group permissions to $host_dir.
     if [ -d $host_dir ]; then
       chmod g+rwxs $host_dir
     fi
