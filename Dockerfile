@@ -63,8 +63,10 @@ RUN chmod +x /opt/*.sh \
 RUN groupadd -g ${gid} ${user} \
  && useradd -rNM -s /bin/bash -g ${user} -u ${uid} ${user} \
  && for g in ${gids//,/ }; do \
-      echo "New group grp$g"; \
-      groupadd -g $g grp$g && usermod -aG grp$g ${user}; \
+      if ! grep -q "[^:]*[:][^:]*[:]$g[:]" /etc/group; then \
+        echo "New group grp$g"; \
+        groupadd -g $g grp$g && usermod -aG grp$g ${user}; \
+      fi; \
     done \
  && chmod g+rw -R /run/ /usr/vpn* /var/log/vpnserver \
  && chown :${user} -R /run/ /usr/vpn* /var/log/vpnserver
