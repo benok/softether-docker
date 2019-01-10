@@ -38,7 +38,6 @@ for v in ${VOLUMES//,/ }; do
 done
 
 RUN_ARGS=" \
-  --sysctl net.ipv4.ip_unprivileged_port_start=0 \
   --user $CONT_UID:$CONT_GID \
   $(for g in ${GIDS//,/ }; do echo "--group-add $g "; done) \
   $(for c in ${CAPS//,/ }; do echo "--cap-add $c "; done) \

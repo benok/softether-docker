@@ -1,0 +1,26 @@
+--- src/Cedar/Interop_OpenVPN.h.old
++++ src/Cedar/Interop_OpenVPN.h
+@@ -139,8 +139,8 @@
+ 
+ 
+ // The default algorithm
+-#define	OPENVPN_DEFAULT_CIPHER					"AES-128-CBC"
+-#define	OPENVPN_DEFAULT_MD						"SHA1"
++#define	OPENVPN_DEFAULT_CIPHER "AES-256-CBC"
++#define	OPENVPN_DEFAULT_MD "SHA256"
+ 
+ // Encryption related
+ #define	OPENVPN_PREMASTER_LABEL					"OpenVPN master secret"
+--- src/bin/hamcore/openvpn_sample.ovpn.old
++++ src/bin/hamcore/openvpn_sample.ovpn
+@@ -85,8 +85,8 @@
+ #          RC2-40-CBC RC2-64-CBC RC2-CBC CAMELLIA-128-CBC CAMELLIA-192-CBC CAMELLIA-256-CBC
+ #  auth:   SHA SHA1 SHA256 SHA384 SHA512 MD5 MD4 RMD160
+ 
+-cipher AES-128-CBC
+-auth SHA1
++cipher AES-256-CBC
++auth SHA256
+ 
+ 
+ ###############################################################################

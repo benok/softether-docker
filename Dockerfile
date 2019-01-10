@@ -5,7 +5,8 @@ ARG BUILD_VERSION=4.28-9669-beta
 ARG ARCHIVE=v4.28-9669-beta.tar.gz
 ARG ARCHIVE_SHA256=fbf6e04c4451d0cb1555c3a53c178b5453c7d761119f82fd693538c9f115fecb
 
-RUN apk add -U ca-certificates \
+RUN apk add --update --no-cache ca-certificates \
+ && rm -rf /var/cache/apk/* \
  && wget https://github.com/${GITHUB_REPO}/archive/${ARCHIVE} -O ${ARCHIVE} \
  && echo "${ARCHIVE_SHA256}  ${ARCHIVE}" | sha256sum -c \
  && mkdir -p /usr/local/src \
@@ -15,15 +16,26 @@ RUN apk add -U ca-certificates \
 FROM alpine:3.8 as build
 
 COPY --from=prep /usr/local/src /usr/local/src
+COPY patches/ /usr/local/src/patches/
 
 ENV LANG=en_US.UTF-8
 
-RUN apk add -U build-base ncurses-dev openssl-dev readline-dev zip \
+WORKDIR /usr/local/src/
+
+# TODO: make under unpriveleged user
+RUN apk add --update --no-cache build-base ncurses-dev openssl-dev \
+            readline-dev zip \
+ && rm -rf /var/cache/apk/* \
  && cd /usr/local/src/SoftEtherVPN_Stable-* \
+ && if [ -d /usr/local/src/patches ]; then \
+      for i in /usr/local/src/patches/*.patch; do \
+        patch -p0 < $i; \
+      done; \
+    fi \
  && ./configure \
  && make \
  && make install \
- && touch /usr/vpnserver/vpn_server.config
+ && strip /usr/vpnserver/vpnserver
 
 FROM alpine:3.8
 
@@ -31,53 +43,52 @@ FROM alpine:3.8
 ARG uid=666
 ARG gid=666
 ARG user=vpn
-# GIDs to grant access rights for the new user
+# additional GIDs for the new user
 ARG gids=
 
-RUN apk update \
- && apk add --update --no-cache bash musl shadow \
-            openssl readline iptables ncurses ca-certificates \
+# install runtime dependecies
+RUN apk add --update --no-cache musl libcap libcrypto1.0 \
+            libssl1.0 ncurses-libs readline bash iptables \
  && rm -rf /var/cache/apk/*
 
-COPY scripts /opt
-
-WORKDIR /usr
-
-COPY --from=build /usr/vpnserver/ vpnserver/
-COPY --from=build /usr/vpncmd/ vpncmd/
-COPY --from=build /usr/vpnbridge/ vpnbridge/
-COPY --from=build /usr/bin/vpn* bin/
+COPY scripts/ /
+COPY --from=build /usr/vpnserver/ /usr/vpnserver/
+COPY --from=build /usr/bin/vpnserver /usr/bin/
 
 ENV LANG=en_US.UTF-8
 
-RUN chmod +x /opt/*.sh \
+RUN chmod +x /entrypoint.sh \
  && mkdir -p /var/log/vpnserver \
  && for fn in server security packet; do \
-      if [ ! -d "/var/log/vpnserver/${fn}_log" ]; then \
         mkdir -p /var/log/vpnserver/${fn}_log; \
-      fi \
     done \
- && ln -fs /var/log/vpnserver/*_log /usr/vpnserver/
+ && ln -fs /var/log/vpnserver/*_log /usr/vpnserver/ \
+ && mkdir -p /etc/vpnserver \
+ && touch /etc/vpnserver/vpn_server.config \
+ && ln -fs /etc/vpnserver/vpn_server.config /usr/vpnserver/ \
+ && ln -fs /etc/vpnserver/chain_certs /usr/vpnserver/
 
 # add new user and set groups
-RUN groupadd -g ${gid} ${user} \
- && useradd -rNM -s /bin/bash -g ${user} -u ${uid} ${user} \
+RUN addgroup -g ${gid} -S ${user} \
+ && adduser -SHD -G ${user} -u ${uid} ${user} \
  && for g in ${gids//,/ }; do \
       if ! grep -q "[^:]*[:][^:]*[:]$g[:]" /etc/group; then \
         echo "New group grp$g"; \
-        groupadd -g $g grp$g && usermod -aG grp$g ${user}; \
+        addgroup -g $g -S grp$g && adduser $user grp$g; \
       fi; \
     done \
  && chmod g+rw -R /run/ /usr/vpn* /var/log/vpnserver \
- && chown :${user} -R /run/ /usr/vpn* /var/log/vpnserver
+ && chown :${user} -R /run/ /usr/vpn* /var/log/vpnserver $(readlink -f /sbin/iptables) \
+ && setcap 'cap_net_bind_service=+epi' /usr/vpnserver/vpnserver \
+ && setcap 'cap_net_admin,cap_net_raw=+epi' $(readlink -f /sbin/iptables)
 
-VOLUME ["/var/log/vpnserver"]
+VOLUME ["/var/log/vpnserver", "/etc/vpnserver"]
 
 # switch user
 USER ${user}
 
 WORKDIR /usr/vpnserver/
 
-ENTRYPOINT ["/opt/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["/usr/bin/vpnserver", "execsvc"]

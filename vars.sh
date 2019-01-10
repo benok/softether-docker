@@ -19,7 +19,7 @@ CONT_HOME="/usr/vpnserver"
 CONT_GROUPS=
 
 # RUNTIME
-VOLUMES=$PWD/conf/vpn_server.config:$CONT_HOME/vpn_server.config,softether_log:/var/log/vpnserver,$PWD/chain_certs:$CONT_HOME/chain_certs
+VOLUMES=$PWD/conf:/etc/vpnserver,softether_log:/var/log/vpnserver
 DEVICES=
 PUBLISH_PORTS=443:443/tcp,500:500/udp,1194:1194/udp,1701:1701/tcp,4500:4500/udp,5555:5555/tcp
 HOST_IP=127.0.0.1

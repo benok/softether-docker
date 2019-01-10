@@ -19,11 +19,20 @@ get_host_dir_groups() {
      vol=( ${v//:/ } )
      host_dir=${vol[0]}
      cont_dir=${vol[1]}
-     if [ -e $host_dir ]; then
-       if stat --printf="%g " . >/dev/null 2>&1; then 
-         stat --printf="%g " $host_dir
-       else
-	 stat -f "%g " $host_dir
+     perms=( $(stat -c "%a" $hist_dir | grep -o .) )
+     # in case there are no full permissions, we get a group
+     if [ ${perms[2]} != 6 -a ${perms[2]} != 7 ]; then
+       if [ -e $host_dir ]; then
+	 # todo check version of stat
+         if stat --printf="%g " . >/dev/null 2>&1; then 
+	   gid=$(stat --printf="%g " $host_dir)
+         else
+	   gid=$(stat -f "%g " $host_dir)
+         fi
+	 # output only non-root groups
+	 if [ $gid != 0 ]; then
+	   echo -n $gid
+	 fi
        fi
      fi
   done
