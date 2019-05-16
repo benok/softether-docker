@@ -19,6 +19,8 @@ get_host_dir_groups() {
      vol=( ${v//:/ } )
      host_dir=${vol[0]}
      cont_dir=${vol[1]}
+     # skip if host_dir not starts with /
+     [ $(echo $host_dir | head -c 1) != '/' ] && continue
      perms=( $(stat -c "%a" $host_dir | grep -o .) )
      # in case there are no full permissions, we get a group
      if [ ${perms[2]} != 6 -a ${perms[2]} != 7 ]; then

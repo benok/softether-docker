@@ -46,7 +46,7 @@ RUN_ARGS=" \
   $(for p in ${PUBLISH_PORTS//,/ }; do echo "--publish ${HOST_IP}:$p "; done)"
 
 echo "Invoking:"
-echo "docker run --name $CONT_NAME -d --restart unless-stopped $RUN_ARGS $TAG_BASE $@"
-docker run --name $CONT_NAME -d --restart unless-stopped $RUN_ARGS $TAG_BASE $@
+echo "docker run --name $CONT_NAME -d --restart unless-stopped $RUN_ARGS $TAG_BASE:$TAG_VERSION $@"
+docker run --name $CONT_NAME -d --restart unless-stopped $RUN_ARGS $TAG_BASE:$TAG_VERSION $@
 #docker run -it --rm $RUN_ARGS $TAG_BASE $@
 
