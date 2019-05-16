@@ -19,7 +19,7 @@ get_host_dir_groups() {
      vol=( ${v//:/ } )
      host_dir=${vol[0]}
      cont_dir=${vol[1]}
-     perms=( $(stat -c "%a" $hist_dir | grep -o .) )
+     perms=( $(stat -c "%a" $host_dir | grep -o .) )
      # in case there are no full permissions, we get a group
      if [ ${perms[2]} != 6 -a ${perms[2]} != 7 ]; then
        if [ -e $host_dir ]; then
