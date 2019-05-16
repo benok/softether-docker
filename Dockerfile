@@ -65,7 +65,13 @@ RUN chmod +x /entrypoint.sh \
  && ln -fs /var/log/vpnserver/*_log /usr/vpnserver/ \
  && mkdir -p /etc/vpnserver \
  && touch /etc/vpnserver/vpn_server.config \
+ && mkdir /etc/vpnserver/backup.vpn_server.config \
+ && mkdir /etc/vpnserver/chain_certs \
+ && chmod 600 /etc/vpnserver/vpn_server.config \
+ && chmod 700 /etc/vpnserver/backup.vpn_server.config \
+ && chmod 700 /etc/vpnserver/chain_certs \
  && ln -fs /etc/vpnserver/vpn_server.config /usr/vpnserver/ \
+ && ln -fs /etc/vpnserver/backup.vpn_server.config /usr/vpnserver/ \
  && ln -fs /etc/vpnserver/chain_certs /usr/vpnserver/
 
 # add new user and set groups
@@ -77,9 +83,9 @@ RUN addgroup -g ${gid} -S ${user} \
         addgroup -g $g -S grp$g && adduser $user grp$g; \
       fi; \
     done \
- && chmod g+rw -R /run/ /usr/vpn* /var/log/vpnserver \
- && chown :${user} -R /run/ /usr/vpn* /var/log/vpnserver $(readlink -f /sbin/iptables) \
- && setcap 'cap_net_bind_service=+epi' /usr/vpnserver/vpnserver \
+ && chmod g+rw -R /run/ /usr/vpn* /var/log/vpnserver /etc/vpnserver \
+ && chown :${user} -R /run/ /usr/vpn* /var/log/vpnserver /etc/vpnserver $(readlink -f /sbin/iptables) \
+ && setcap 'cap_net_admin,cap_net_broadcast,cap_sys_nice,cap_sys_admin,cap_net_bind_service,cap_net_raw,cap_setuid=+epi' /usr/vpnserver/vpnserver \
  && setcap 'cap_net_admin,cap_net_raw=+epi' $(readlink -f /sbin/iptables)
 
 VOLUME ["/var/log/vpnserver", "/etc/vpnserver"]
