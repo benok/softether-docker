@@ -24,7 +24,7 @@ WORKDIR /usr/local/src/
 
 # TODO: make under unpriveleged user
 RUN apk add --update --no-cache build-base ncurses-dev openssl-dev \
-            readline-dev zip \
+            readline-dev zip ethtool\
  && rm -rf /var/cache/apk/* \
  && cd /usr/local/src/SoftEtherVPN_Stable-* \
  && if [ -d /usr/local/src/patches ]; then \
