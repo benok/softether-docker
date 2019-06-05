@@ -54,6 +54,8 @@ RUN apk add --update --no-cache musl libcap libcrypto1.0 \
 COPY scripts/ /
 COPY --from=build /usr/vpnserver/ /usr/vpnserver/
 COPY --from=build /usr/bin/vpnserver /usr/bin/
+COPY --from=build /usr/vpncmd/ /usr/vpncmd/
+COPY --from=build /usr/bin/vpncmd /usr/bin/
 
 ENV LANG=en_US.UTF-8
 
