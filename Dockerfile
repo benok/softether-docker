@@ -1,9 +1,9 @@
 FROM alpine:3.8 as prep
 
 ARG GITHUB_REPO=SoftEtherVPN/SoftEtherVPN_Stable
-ARG BUILD_VERSION=4.28-9669-beta
-ARG ARCHIVE=v4.28-9669-beta.tar.gz
-ARG ARCHIVE_SHA256=fbf6e04c4451d0cb1555c3a53c178b5453c7d761119f82fd693538c9f115fecb
+ARG BUILD_VERSION=v4.38-9760-rtm
+ARG ARCHIVE=v4.38-9760-rtm.tar.gz
+ARG ARCHIVE_SHA256=7701dfb76b888d4adde19d9a39d0919681f6c091f3eb5295ec8caf0439eb3a1a
 
 RUN apk add --update --no-cache ca-certificates \
  && rm -rf /var/cache/apk/* \
@@ -13,7 +13,7 @@ RUN apk add --update --no-cache ca-certificates \
  && tar -x -C /usr/local/src/ -f ${ARCHIVE} \
  && rm ${ARCHIVE}
 
-FROM alpine:3.8 as build
+FROM alpine:3.14.2 as build
 
 COPY --from=prep /usr/local/src /usr/local/src
 COPY patches/ /usr/local/src/patches/
@@ -24,7 +24,7 @@ WORKDIR /usr/local/src/
 
 # TODO: make under unpriveleged user
 RUN apk add --update --no-cache build-base ncurses-dev openssl-dev \
-            readline-dev zip ethtool\
+            readline-dev zip ethtool zlib-dev \
  && rm -rf /var/cache/apk/* \
  && cd /usr/local/src/SoftEtherVPN_Stable-* \
  && if [ -d /usr/local/src/patches ]; then \
@@ -37,7 +37,7 @@ RUN apk add --update --no-cache build-base ncurses-dev openssl-dev \
  && make install \
  && strip /usr/vpnserver/vpnserver
 
-FROM alpine:3.8
+FROM alpine:3.14.2
 
 # UID and GID of new user
 ARG uid=666
@@ -47,8 +47,8 @@ ARG user=vpn
 ARG gids=
 
 # install runtime dependecies
-RUN apk add --update --no-cache musl libcap libcrypto1.0 \
-            libssl1.0 ncurses-libs readline bash iptables \
+RUN apk add --update --no-cache musl libcap libressl3.3-libcrypto \
+            libressl ncurses-libs readline bash iptables \
  && rm -rf /var/cache/apk/*
 
 COPY scripts/ /
