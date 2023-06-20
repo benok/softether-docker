@@ -1,4 +1,4 @@
-FROM alpine:3.16.2 as prep
+FROM alpine:3.17.4 as prep
 
 ARG GITHUB_REPO=SoftEtherVPN/SoftEtherVPN_Stable
 ARG BUILD_VERSION=v4.38-9760-rtm
@@ -13,7 +13,7 @@ RUN apk add --update --no-cache ca-certificates \
  && tar -x -C /usr/local/src/ -f ${ARCHIVE} \
  && rm ${ARCHIVE}
 
-FROM alpine:3.16.2 as build
+FROM alpine:3.17.4 as build
 
 COPY --from=prep /usr/local/src /usr/local/src
 COPY patches/ /usr/local/src/patches/
@@ -37,7 +37,7 @@ RUN apk add --update --no-cache build-base ncurses-dev openssl-dev \
  && make install \
  && strip /usr/vpnserver/vpnserver
 
-FROM alpine:3.16.2
+FROM alpine:3.17.4
 
 # UID and GID of new user
 ARG uid=666
