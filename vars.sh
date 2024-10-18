@@ -1,10 +1,10 @@
 
 # docker image naming
-TAG_BASE="pborky/softether"
-TAG_VERSION=4.41-9782
+TAG_BASE="softether"
+TAG_VERSION=4.41-9782-beta
 # github 
 GITHUB_REPO="SoftEtherVPN/SoftEtherVPN_Stable"
-BUILD_VERSION=v${TAG_VERSION}-beta
+BUILD_VERSION=v${TAG_VERSION}
 ARCHIVE=${BUILD_VERSION}.tar.gz
 ARCHIVE_SHA256=fbf6e04c4451d0cb1555c3a53c178b5453c7d761119f82fd693538c9f115fecb
 
