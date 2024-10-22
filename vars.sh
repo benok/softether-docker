@@ -1,6 +1,6 @@
 
 # docker image naming
-TAG_BASE="softether"
+TAG_BASE=${TAG_BASE:-softether}
 TAG_VERSION=4.41-9782-beta
 # github 
 GITHUB_REPO="SoftEtherVPN/SoftEtherVPN_Stable"
