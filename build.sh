@@ -28,11 +28,9 @@ docker build . --tag=$TAG_BASE:$TAG_VERSION $BUILD_ARGS
 
 
 # if we are building latest version 
-LATEST=$(get_latest "$GITHUB_REPO")
-if [ "$LATEST" == "$BUILD_VERSION" ]; then
-
+#LATEST=$(get_latest "$GITHUB_REPO")
+#if [ "$LATEST" == "$BUILD_VERSION" ]; then
   echo Invoking:
   echo "docker build . --tag=$TAG_BASE:latest $BUILD_ARGS"
   docker build . --tag=$TAG_BASE:latest $BUILD_ARGS
-
-fi
+#fi
