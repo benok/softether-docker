@@ -1,9 +1,9 @@
-FROM alpine:3.20.3 as prep
+FROM alpine:3.22 as prep
 
 ARG GITHUB_REPO=SoftEtherVPN/SoftEtherVPN_Stable
-ARG BUILD_VERSION=v4.41-9782-beta
-ARG ARCHIVE=v4.41-9782-beta.tar.gz
-ARG ARCHIVE_SHA256=98e67f1d2ba7287ba8c04ecee32d48ae9da65e2ea799012822343cf9221976f6
+ARG BUILD_VERSION=v4.44-9807-rtm
+ARG ARCHIVE=v4.44-9807-rtm.tar.gz
+ARG ARCHIVE_SHA256=8ccd8959a674bd4b34f9fc5dd9eb60fe0226b0adc0f6f852a07011dcc769ed97
 
 RUN apk add --update --no-cache ca-certificates \
  && rm -rf /var/cache/apk/* \
@@ -24,7 +24,7 @@ WORKDIR /usr/local/src/
 
 # TODO: make under unpriveleged user
 RUN apk add --update --no-cache build-base ncurses-dev openssl-dev \
-            readline-dev zip ethtool zlib-dev \
+            readline-dev zip ethtool zlib-dev iptables \
  && rm -rf /var/cache/apk/* \
  && cd /usr/local/src/SoftEtherVPN_Stable-* \
  && if [ -d /usr/local/src/patches ]; then \
@@ -37,7 +37,7 @@ RUN apk add --update --no-cache build-base ncurses-dev openssl-dev \
  && make install \
  && strip /usr/vpnserver/vpnserver
 
-FROM alpine:3.20.3
+FROM alpine:3.22
 
 # UID and GID of new user
 ARG uid=666
@@ -86,9 +86,9 @@ RUN addgroup -g ${gid} -S ${user} \
       fi; \
     done \
  && chmod g+rw -R /run/ /usr/vpn* /var/log/vpnserver /etc/vpnserver \
- && chown :${user} -R /run/ /usr/vpn* /var/log/vpnserver /etc/vpnserver $(readlink -f /sbin/iptables) \
+ && chown :${user} -R /run/ /usr/vpn* /var/log/vpnserver /etc/vpnserver $(readlink -f /usr/sbin/iptables) \
  && setcap 'cap_net_admin,cap_net_broadcast,cap_sys_nice,cap_sys_admin,cap_net_bind_service,cap_net_raw,cap_setuid=+epi' /usr/vpnserver/vpnserver \
- && setcap 'cap_net_admin,cap_net_raw=+epi' $(readlink -f /sbin/iptables)
+ && setcap 'cap_net_admin,cap_net_raw=+epi' $(readlink -f /usr/sbin/iptables)
 
 VOLUME ["/var/log/vpnserver", "/etc/vpnserver"]
 
